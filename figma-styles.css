@@ -18,10 +18,10 @@
   --max-width:1100px;
   --brand-blue:#0066FF;
   --brand-gold:#c9b37a;
-  --proxima: 'Proxima Nova', Inter, Roboto, sans-serif;
+  --proxima: "proxima-nova", Inter, Roboto, sans-serif;
   --font-sans: Inter, Roboto, -apple-system, system-ui, 'Segoe UI', Arial, sans-serif;
   --font-serif: 'DM Serif Display', Georgia, serif;
-  --font-condensed: Oswald, 'Proxima Nova Condensed', Inter, sans-serif;
+  --font-condensed: Oswald, "proxima-nova-condensed", Inter, sans-serif;
 
   /* precise typographic tuning */
   --fw-regular: 400;
@@ -149,10 +149,12 @@ p,button,input,select{font-family:var(--font-sans);font-weight:400}
 .contact-page .page-intro .intro-left h1{margin-bottom:6px}
 .contact-page .page-intro .intro-body{margin-top:8px}
 
-/* About page: same tightened spacing as Contact page */
-.about-page .page-intro{padding-top:56px;padding-bottom:20px}
+/* About page: same tightened spacing as Contact page; slightly tighter for gutters */
+.about-page .page-intro{padding-top:36px;padding-bottom:14px}
 .about-page .page-intro .intro-left h1{margin-bottom:6px}
 .about-page .page-intro .intro-body{margin-top:8px}
+/* Narrow the empty right column on About to reduce side whitespace */
+.about-page .page-intro .container{grid-template-columns:1fr 260px;gap:24px}
 
 /* Add clear spacing between the intro band and the following content (forms/cards) */
 .page-intro + .content {
@@ -296,7 +298,7 @@ p,button,input,select{font-family:var(--font-sans);font-weight:400}
    - 3-column grid with responsive 2/1 breakpoints
    - Hover/focus affordance, reduced-motion safe
    ----------------------------- */
-.why-sbx{padding:48px 0}
+.why-sbx{padding:28px 0}
 .why-sbx .how-inner{max-width:var(--max-width);margin:0 auto;padding:0 12px}
 .why-sbx h3{font-size:28px;font-weight:700;margin-bottom:12px;line-height:1.12}
 .why-sbx .muted{font-size:16px;color:var(--sg-muted);max-width:64ch;margin-bottom:18px}
@@ -525,12 +527,12 @@ main > section{transition:background-color .2s ease}
 
 /* Alex feature section */
 .alex-section{padding:48px 0;background:transparent}
-.alex-grid{max-width:var(--max-width);margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:stretch;padding:0 12px}
-.alex-image{height:100%}
-.alex-image img{width:100%;height:100%;object-fit:cover;display:block;border-radius:8px}
+.alex-grid{max-width:var(--max-width);margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:center;padding:0 12px}
+.alex-section .alex-image{height:100%;display:flex;align-items:center;justify-content:center}
+.alex-section .alex-image img{width:100%;height:80%;object-fit:cover;display:block;border-radius:8px}
 
 /* Ensure homepage alex feature uses a larger image column so founder image displays at full size */
-.alex-section .alex-grid{grid-template-columns:520px 1fr;gap:36px;align-items:stretch}
+.alex-section .alex-grid{grid-template-columns:520px 1fr;gap:36px;align-items:center}
 .alex-section .alex-text{display:flex;align-items:center}
 .alex-text{display:block}
 .alex-text blockquote{margin:0;padding:18px 22px;border-left:4px solid #d6d6d6;background:transparent;font-style:italic;color:var(--sg-muted);} 
@@ -539,11 +541,24 @@ main > section{transition:background-color .2s ease}
 .alex-text blockquote cite{display:block;font-style:normal;font-weight:400;color:var(--sg-muted)}
 
 /* Alex lead quote section (reuses alex-grid styles but scoped) */
-.alex-lead-section{padding:64px 0;background:transparent}
-.alex-lead-section .alex-grid{max-width:var(--max-width);margin:0 auto;display:grid;grid-template-columns:520px 1fr;gap:40px;align-items:stretch;padding:0 12px}
-/* Ensure image column fills the available height and crops to cover */
-.alex-lead-section .alex-image{display:block;height:100%}
-.alex-lead-section .alex-image img{width:100%;height:100%;object-fit:cover;object-position:center center;display:block;border-radius:8px}
+.alex-lead-section{padding:48px 0;background:transparent}
+.alex-lead-section .alex-grid{max-width:var(--max-width);margin:0 auto;display:grid;grid-template-columns:520px 1fr;gap:32px;align-items:center;padding:0 12px;min-height:420px}
+/* About page: image occupies half the lead column; keep this scoped to .alex-lead-section only */
+.alex-lead-section .alex-image{display:flex;align-items:center;justify-content:center;height:100%}
+.alex-lead-section .alex-image img{width:100%;height:50%;object-fit:cover;object-position:center center;display:block;border-radius:8px}
+.alex-lead-section .alex-text{display:flex;align-items:center}
+
+/* Homepage: first Alex lead — use hp- prefix to avoid cross-page coupling */
+.hp-alex-lead-section{padding:64px 0;background:transparent}
+.hp-alex-lead-section .hp-alex-grid{max-width:var(--max-width);margin:0 auto;display:grid;grid-template-columns:520px 1fr;gap:40px;align-items:center;padding:0 12px;min-height:480px}
+.hp-alex-lead-section .hp-alex-image{display:flex;align-items:center;height:100%}
+.hp-alex-lead-section .hp-alex-image img{width:100%;height:80%;object-fit:cover;object-position:center center;display:block;border-radius:8px}
+.hp-alex-lead-section .hp-alex-text{display:flex;align-items:center}
+/* match the styled blockquote used on the About page */
+.hp-alex-lead-section .hp-alex-text blockquote{margin:0;padding:24px 26px;border-left:4px solid #d6d6d6;background:transparent;font-style:italic;color:var(--sg-muted);} 
+.hp-alex-lead-section .hp-alex-text blockquote p{font-family:'DM Serif Display', serif;font-size:22px;line-height:1.5;margin:0 0 12px}
+.hp-alex-lead-section .hp-alex-text blockquote footer{font-weight:700;color:var(--sg-black);margin-top:8px}
+.hp-alex-lead-section .hp-alex-text blockquote cite{display:block;font-style:normal;font-weight:400;color:var(--sg-muted)}
 .alex-lead-section .alex-text blockquote{margin:0;padding:24px 26px;border-left:4px solid #d6d6d6;background:transparent;font-style:italic;color:var(--sg-muted);} 
 .alex-lead-section .alex-text blockquote p{font-family:'DM Serif Display', serif;font-size:22px;line-height:1.5;margin:0 0 12px}
 .alex-lead-section .alex-text blockquote footer{font-weight:700;color:var(--sg-black);margin-top:8px}
