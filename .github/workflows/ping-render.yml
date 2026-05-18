@@ -1,0 +1,15 @@
+name: Keep Render Awake
+
+on:
+  schedule:
+    - cron: '*/10 * * * *' # every 10 minutes
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Curl staging URL
+        run: |
+          echo "Pinging sbxcars.onrender.com to keep instance awake"
+          curl -fsS --max-time 10 https://sbxcars.onrender.com || (echo 'Ping failed' && exit 1)
