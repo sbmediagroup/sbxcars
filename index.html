@@ -10,8 +10,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="favicon/favicon-16x16.png">
     <link rel="shortcut icon" href="favicon/favicon.ico">
     <meta name="theme-color" content="#ffffff">
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="figma-styles.css" />
+    <link rel="stylesheet" href="main.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="https://use.typekit.net/rwx2qfc.css" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,53 +18,25 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,800;1,400&family=DM+Serif+Display&family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
   </head>
   <body>
+
     <header class="site-header">
       <nav class="nav">
-            <div class="logo"><a href="/"><img src="assets/images/logos/sbx-cars-sb-2024.svg" alt="SBX Cars" /></a></div>
-        <button class="nav-toggle" aria-expanded="false" aria-controls="mainLinks" aria-label="Open menu">☰</button>
-        <div id="mainLinks" class="main-links">
-            <ul class="nav-links centered">
-            <li><a href="/" class="active">Home</a></li>
-            <li><a href="/about">About</a></li>
-            <li><a href="/contact">Contact</a></li>
-            <li><a href="/#faq-cta">FAQ's</a></li>
-          </ul>
-        </div>
+        <div class="logo"><a href="/"><img src="assets/images/logos/sbx-cars-sb-2024.svg" alt="SBX Cars" /></a></div>
       </nav>
     </header>
 
     <main>
       <section class="hero">
-        <div class="hero-slider" role="region" aria-label="Featured cars">
-          <div class="slides">
-            <div class="slide active">
-              <img src="assets/images/slides/landing2.jpg" alt="Featured car" loading="eager">
-            </div>
-            <div class="slide">
-              <img src="assets/images/slides/landing3.jpg" alt="Featured car" loading="lazy">
-            </div>
-            <div class="slide">
-              <img src="assets/images/slides/finance-2.jpg" alt="Featured car" loading="lazy">
-            </div>
-            <div class="slide">
-              <img src="assets/images/slides/subscribe.jpg" alt="Featured car" loading="lazy">
-            </div>
-            <div class="slide">
-              <img src="assets/images/slides/slide3.jpg" alt="Featured car" loading="lazy">
-            </div>
-            <div class="slide">
-              <img src="assets/images/slides/slide3.png" alt="Featured car" loading="lazy">
-            </div>
+        <div class="sell-hero-banner" role="img" aria-label="Featured car">
+          <picture>
+            <source type="image/avif" srcset="public/images/landing/landing3-320.avif 320w, public/images/landing/landing3-480.avif 480w, public/images/landing/landing3-768.avif 768w, public/images/landing/landing3-1024.avif 1024w, public/images/landing/landing3-1600.avif 1600w, public/images/landing/landing3-2048.avif 2048w" sizes="100vw">
+            <source type="image/webp" srcset="public/images/landing/landing3-320.webp 320w, public/images/landing/landing3-480.webp 480w, public/images/landing/landing3-768.webp 768w, public/images/landing/landing3-1024.webp 1024w, public/images/landing/landing3-1600.webp 1600w, public/images/landing/landing3-2048.webp 2048w" sizes="100vw">
+            <img class="sell-hero-img" src="public/images/landing/landing3-2048.jpg" alt="Featured car" loading="eager" decoding="async" />
+          </picture>
+          <div class="hero-caption bottom-left">
+            <h1>SBX Cars Private Sales</h1>
+            <p class="muted centered">Trusted access to exceptional cars</p>
           </div>
-
-          <button class="slider-control prev" aria-label="Previous slide">‹</button>
-          <button class="slider-control next" aria-label="Next slide">›</button>
-
-          <div class="slider-indicators" role="tablist" aria-label="Slide indicators"></div>
-
-          <noscript>
-            <img src="assets/images/slides/landing2.jpg" alt="Featured car">
-          </noscript>
         </div>
       </section>
 
@@ -77,11 +48,11 @@
         <section class="sell-cta">
           <div class="sell-cta-inner">
             <div class="container">
-              <h1>Harnessing the Vast Reach of</h1>
+              <h1>Powered By</h1>
               <div class="sell-cta-logo">
                 <img src="assets/images/logos/sbxlogo-sell-page.jpg" alt="SupercarBlondie" loading="lazy" />
               </div>
-              <p class="muted">With an unrivalled automotive audience of <strong>120 million people</strong>, we will connect you to buyers all over the world, unlocking the best selling price for your vehicle.</p>
+              <p class="muted">Should your vehicle qualify, our expert sales specialist will contact you to learn more about it</p>
             </div>
           </div>
         </section>
@@ -130,284 +101,43 @@
         </div>
       </section>
 
-      <section class="how-it-works">
-        <div class="how-inner">
-          <div class="how-steps how-steps--full">
-            <h3>A Bespoke Sales Process, Curated for You.</h3>
-            <p class="muted">We don't run a clock. We run a confidential matching process designed for high-value assets. Here is how we secure your outcome:</p>
-            <ol class="how-steps-list">
-              <li>
-                <div class="step-row">
-                  <span class="step-icon" aria-hidden="true">
-                    <i class="fa-solid fa-search"></i>
-                  </span>
-                  <div class="step-content">
-                    <h4>Confidential Consultation</h4>
-                    <p class="step-desc">Our specialists contact you for a private, no-obligation discussion. We verify your vehicle’s provenance, history, and condition to craft a tailored sales strategy.</p>
-                  </div>
-                </div>
-              </li>
-              <li>
-                <div class="step-row">
-                  <span class="step-icon" aria-hidden="true">
-                    <i class="fa-solid fa-camera"></i>
-                  </span>
-                  <div class="step-content">
-                    <h4>Curated Presentation</h4>
-                    <p class="step-desc">A professional photoshoot and a bespoke digital brochure are created. Your asset is presented exclusively to our pre-vetted network of global collectors—never in a public “lot.”</p>
-                  </div>
-                </div>
-              </li>
-              <li>
-                <div class="step-row">
-                  <span class="step-icon" aria-hidden="true">
-                    <i class="fa-solid fa-handshake"></i>
-                  </span>
-                  <div class="step-content">
-                    <h4>Discreet Negotiation</h4>
-                    <p class="step-desc">We manage all inquiries and negotiate directly with qualified buyers on your behalf. Your identity and your asset’s details remain confidential until terms are agreed.</p>
-                  </div>
-                </div>
-              </li>
-              <li>
-                <div class="step-row">
-                  <span class="step-icon" aria-hidden="true">
-                    <i class="fa-solid fa-file-invoice"></i>
-                  </span>
-                  <div class="step-content">
-                    <h4>Seamless Settlement</h4>
-                    <p class="step-desc">We oversee all escrow arrangements, legal paperwork, and logistics. You receive secure payment upon successful transfer of ownership.</p>
-                  </div>
-                </div>
-              </li>
-            </ol>
-          </div>
-        </div>
-      </section>
+      <!-- how-it-works section removed per request -->
 
       <!-- Curated section: split text (left) + image (right) -->
-      <!-- Alex lead quote: image left, quote right -->
-      <section class="hp-alex-lead-section">
-        <div class="hp-alex-grid">
-          <div class="hp-alex-image">
-            <img src="assets/images/alex/alex_front_bentley_jeep.jpg" alt="Alex Hirschi" loading="lazy" />
-          </div>
-          <div class="hp-alex-text">
-            <blockquote>
-              <p>"I've spent years inside the world's most extraordinary garages. I've seen what separates a great collection from a random assortment of cars.</p>
-              <p>That education is what I bring to every vehicle we accept at SBX Cars.</p>
-              <p>We don't list everything. We curate against a single standard: provenance, condition, and story. If a car doesn't meet it, we pass.</p>
-              <p>Your vehicle deserves that level of scrutiny. And your privacy deserves that level of respect."</p>
-              <footer>— Alex Hirschi<br/><cite>Founder, Supercar Blondie</cite></footer>
-            </blockquote>
-          </div>
-        </div>
-      </section>
-      <section class="curated-section">
-        <div class="curated-grid">
-          <div class="curated-text">
-            <h3>Curated For Discerning Collectors</h3>
-            <p class="muted">We do not list every car. We accept only vehicles that meet our strict criteria for rarity, provenance, and condition.</p>
-            <p>Our typical placements include:</p>
-            <ul>
-              <li>Hypercars and limited-production supercars</li>
-              <li>Low-mileage modern classics (under 5,000 miles)</li>
-              <li>Single-owner collector vehicles with full service history</li>
-              <li>Iconic models from Ferrari, Lamborghini, Porsche, McLaren, and Bugatti</li>
-            </ul>
-          </div>
-          <div class="curated-image">
-            <img src="assets/images/banners/sell-hero-page.jpg" alt="Curated for collectors" />
-          </div>
-        </div>
-      </section>
-
-      <!-- Alex feature: image left, text right -->
-      <section class="alex-section">
+      <!-- Alex lead replaced: use the second Alex blockquote and image -->
+      <section class="hp-alex-lead-section alex-section">
         <div class="alex-grid">
           <div class="alex-image">
-            <img src="assets/images/alex/alex_side_shot_smile.jpg" alt="Alex chatting" />
+            <picture>
+              <source type="image/jpeg" srcset="public/images/alex/alex_side_shot_smile-320.jpg 320w, public/images/alex/alex_side_shot_smile-480.jpg 480w, public/images/alex/alex_side_shot_smile-768.jpg 768w, public/images/alex/alex_side_shot_smile-1600.jpg 1024w" sizes="(max-width:600px) 100vw, 44vw">
+              <img src="public/images/alex/alex_side_shot_smile-1600.jpg" alt="Alex chatting" loading="lazy" decoding="async" />
+            </picture>
           </div>
           <div class="alex-text">
             <blockquote>
-              <p>"Every car we accept tells a story. We don't just list vehicles — we curate them against the standard I've built over a decade with the world's greatest collectors."</p>
-              <footer>— Alex Hirschi<br/><cite>Founder, Supercar Blondie</cite></footer>
+              <p>"The rarest cars in the world are rarely bought publicly. Through years of building relationships with collectors, manufacturers, and clients globally, SBX Cars Private Sales gives access to opportunities most people never see."</p>
+              <footer>— Alex Hirschi</footer>
             </blockquote>
           </div>
         </div>
       </section>
+      <!-- Curated section removed per request -->
 
-      <section class="why-sbx" aria-labelledby="why-sbx-title">
-        <div class="how-inner">
-          <h3 id="why-sbx-title">Private &amp; Global</h3>
-          <p class="muted">Private, white-glove service tailored for high-value collector vehicles.</p>
-          <div class="why-grid why-grid--sbx">
-            <div class="why-item">
-              <h4>Private Marketplace</h4>
-              <p>Your vehicle is not listed in a public feed. It is confidentially marketed to a hand-picked group of serious collectors, protecting both your privacy and the vehicle’s market perception.</p>
-            </div>
-            <div class="why-item">
-              <h4>Global Collector Access</h4>
-              <p>Leveraging Supercar Blondie’s 120M audience, we provide discreet access to buyers across 80+ countries—without public auctions. We find the right buyer, not just any buyer.</p>
-            </div>
-            <div class="why-item">
-              <h4>Asset-First Approach</h4>
-              <p>High-value vehicles require time. We ensure proper spotlight through dedicated campaigns, professional media, and direct outreach, ensuring your asset is not “lost in a crowd.”</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      <!-- Duplicate Alex feature removed (now unified with hp-alex-lead-section) -->
+
+      <!-- Why SBX (Private & Global) section removed per request -->
 
       
 
-      <section>
-        <div class="card-grid">
-          <div class="card-panel">
-            <div class="sold-heading"><h2>Sold By SBX Cars</h2></div>
-            <div class="card-grid-inner">
-                    <!-- Card 1 -->
-                    <article class="card">
-                      <div class="card-media" role="img" aria-label="1985 Ferrari Mondial Quattrovalvole Cabriolet" style="background-image:url('assets/images/listings/Ferrari.avif')">
-                        <div class="card-overlay">
-                          <div class="overlay-meta"><div class="year">1985</div><div class="make">FERRARI</div></div>
-                          <h3 class="card-title">Mondial Quattrovalvole Cabriolet</h3>
-                          <p class="card-desc">1 of 629, 18k mi, Recent Timing Belt &amp; Water Pump</p>
-                        </div>
-                      </div>
-                      <div class="card-body">
-                        <div class="card-footer sold-row">
-                          <div class="price">Sold (Price Upon Request)</div>
-                          <div class="country">Canada <img class="flag" src="https://sbxcars.com/Assets/Countries/CAN.svg" alt="Canada flag" /></div>
-                        </div>
-                      </div>
-                    </article>
-
-                    <!-- Card 2 -->
-                    <article class="card">
-                      <div class="card-media" role="img" aria-label="2021 Porsche Cayenne GTS Coupé Owned by Lionel Messi" style="background-image:url('assets/images/listings/Porsche.avif')">
-                        <div class="card-overlay">
-                          <div class="overlay-meta"><div class="year">2021</div><div class="make">PORSCHE</div></div>
-                          <h3 class="card-title">Cayenne GTS Coupé</h3>
-                          <p class="card-desc">21" RS Spyder Design Wheels, Recent TÜV Inspection Report</p>
-                        </div>
-                      </div>
-                      <div class="card-body">
-                        <div class="card-footer sold-row">
-                          <div class="price">Confidential Sale – Completed</div>
-                          <div class="country">Germany <img class="flag" src="https://sbxcars.com/Assets/Countries/DEU.svg" alt="Germany flag" /></div>
-                        </div>
-                      </div>
-                    </article>
-
-                    <!-- Card 3 -->
-                    <article class="card">
-                      <div class="card-media" role="img" aria-label="2019 Mercedes-Benz AMG GT Roadster" style="background-image:url('assets/images/listings/Mercedes-Benz .avif')">
-                        <div class="card-overlay">
-                          <div class="overlay-meta"><div class="year">2019</div><div class="make">MERCEDES-BENZ</div></div>
-                          <h3 class="card-title">AMG GT Roadster</h3>
-                          <p class="card-desc">Low Miles, AMG Sport Suspension, Extensive Dealer Service</p>
-                        </div>
-                      </div>
-                      <div class="card-body">
-                        <div class="card-footer sold-row">
-                          <div class="price">Private Treaty – Global Buyer Found</div>
-                          <div class="country">USA <img class="flag" src="https://sbxcars.com/Assets/Countries/USA.svg" alt="USA flag" /></div>
-                        </div>
-                      </div>
-                    </article>
-
-                    <!-- Card 4 -->
-                    <article class="card">
-                      <div class="card-media" role="img" aria-label="1989 Porsche 930 Turbo" style="background-image:url('assets/images/listings/Porsche1989.avif')">
-                        <div class="card-overlay">
-                          <div class="overlay-meta"><div class="year">1989</div><div class="make">PORSCHE</div></div>
-                          <h3 class="card-title">930 Turbo</h3>
-                          <p class="card-desc">Classic 930 Turbo with US specifications and recent recommissioning.</p>
-                        </div>
-                      </div>
-                      <div class="card-body">
-                        <div class="card-footer sold-row">
-                          <div class="price">Confidential Sale – Completed</div>
-                          <div class="country">UAE <img class="flag" src="https://sbxcars.com/Assets/Countries/ARE.svg" alt="UAE flag" /></div>
-                        </div>
-                      </div>
-                    </article>
-
-                    <!-- Card 5 -->
-                    <article class="card">
-                      <div class="card-media" role="img" aria-label="2005 Ferrari F430 F1 Spider" style="background-image:url('assets/images/listings/FerrariF1Spider.avif')">
-                        <div class="card-overlay">
-                          <div class="overlay-meta"><div class="year">2005</div><div class="make">FERRARI</div></div>
-                          <h3 class="card-title">F430 F1 Spider</h3>
-                          <p class="card-desc">Well maintained F430 with recent service and clear history.</p>
-                        </div>
-                      </div>
-                      <div class="card-body">
-                        <div class="card-footer sold-row">
-                          <div class="price">Sale Concluded (Matching Buyer)</div>
-                          <div class="country">USA <img class="flag" src="https://sbxcars.com/Assets/Countries/USA.svg" alt="USA flag" /></div>
-                        </div>
-                      </div>
-                    </article>
-
-                    <!-- Card 6 -->
-                    <article class="card">
-                      <div class="card-media" role="img" aria-label="2024 Chevrolet Camaro ZL1 Convertible" style="background-image:url('assets/images/listings/camero-00159.avif')">
-                        <div class="card-overlay">
-                          <div class="overlay-meta"><div class="year">2024</div><div class="make">CHEVROLET</div></div>
-                          <h3 class="card-title">Camaro ZL1 Convertible</h3>
-                          <p class="card-desc">High-performance ZL1 convertible with extremely low miles.</p>
-                        </div>
-                      </div>
-                      <div class="card-body">
-                        <div class="card-footer sold-row">
-                          <div class="price">Discreet Sale – Finalized</div>
-                          <div class="country">USA <img class="flag" src="https://sbxcars.com/Assets/Countries/USA.svg" alt="USA flag" /></div>
-                        </div>
-                      </div>
-                    </article>
-                </div>
-              </div>
-            </div>
-      </section>
+      <!-- Sold grid removed per request -->
     </main>
-      <section id="faq-cta" class="faq-cta">
-        <div class="faq-inner">
-          <h3>Frequently Asked Questions</h3>
-          <div class="faq-list">
-            <details>
-              <summary>What is a private sales treaty, and how is it different from an auction?</summary>
-              <p>Unlike an auction with a fixed end date, a private treaty allows us to negotiate directly with qualified buyers on your behalf, often achieving a higher price without time pressure. Your asset remains off public marketplaces.</p>
-            </details>
-
-            <!-- FAQ removed by request: "What types of vehicles or assets do you accept?" -->
-
-            <details>
-              <summary>What fees and commissions do you charge?</summary>
-              <p>Our fee structure is performance-based and fully transparent. A success fee applies only upon a completed sale. No hidden listing fees.</p>
-            </details>
-
-            <details>
-              <summary>How is my privacy protected?</summary>
-              <p>Your personal information and the vehicle’s location are only shared with serious, pre-qualified buyers after a signed NDA. All marketing is generic or anonymized unless you approve otherwise.</p>
-            </details>
-            <details>
-              <summary>Not sure if your vehicle qualifies?</summary>
-              <p>Contact our specialists for a confidential pre-assessment. <a href="/contact">Contact us</a> — no obligation, fully discreet.</p>
-            </details>
-          </div>
-          
-        </div>
-      </section>
+      <!-- FAQ section removed per request -->
 
     <footer class="site-footer">
       
 
       <div class="footer-top">
         <div class="footer-links">
-          <a href="/#faq-cta">FAQ's</a>
-          <a href="/contact">Contact us</a>
-          <a href="/about">About us</a>
           <a href="/terms">Terms of Service</a>
           <a href="/privacy">Privacy Policy</a>
         </div>
@@ -447,7 +177,7 @@
         </div>
       </div>
     </footer>
-    <script src="assets/js/slider.js" defer></script>
+    <!-- slider removed: jumbotron hero now used -->
     <script>
       (function(){
         const form = document.getElementById('sellForm');

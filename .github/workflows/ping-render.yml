@@ -1,8 +1,13 @@
 name: Keep Render Awake
 
 on:
+  # GitHub Actions scheduled workflows use cron syntax. GitHub enforces
+  # a minimum effective schedule of ~5 minutes; 1-minute intervals are
+  # not reliably supported. For true 1-minute pings, use an external
+  # uptime monitor (UptimeRobot, Pingdom, etc.) to call `workflow_dispatch`
+  # or directly hit the staging URL.
   schedule:
-    - cron: '*/10 * * * *' # every 10 minutes
+    - cron: '*/5 * * * *' # every 5 minutes (minimum practical on GitHub)
   workflow_dispatch: {}
   push:
     branches:

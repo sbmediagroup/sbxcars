@@ -1,0 +1,11 @@
+{
+  "name": "sbxcars-frontend-tools",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "optimize-images": "node scripts/optimize-images.js"
+  },
+  "devDependencies": {
+    "sharp": "^0.32.0"
+  }
+}

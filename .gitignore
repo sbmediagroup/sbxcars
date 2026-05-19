@@ -35,4 +35,7 @@ Thumbs.db
 .parcel-cache/
 
 # Images or large assets (if you prefer not to commit local images)
-# assets/images/
+# Generated images: do not commit generated variants or the public output
+public/images/
+# Ignore generated variants in assets/images that include a size suffix (e.g. -320, -1024)
+assets/images/**/*-[0-9]*.*

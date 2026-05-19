@@ -4,9 +4,8 @@ This repository contains a static HTML/CSS prototype plus a small Node server th
 
 Contents
 - [index.html](index.html) — main prototype page and forms
-- [styles.css](styles.css) — primary site stylesheet
-- [figma-styles.css](figma-styles.css) — enhanced styles converted from Figma
-- `server/` — Node/Express server that exposes `/api/sell` and `/api/contact`
+- [main.css](main.css) — consolidated site stylesheet (merged from styles.css and figma-styles.css)
+ - `server/` — Node/Express server that exposes `/api/sell` and `/api/contact`
 
 Quick local view
 1. Open `index.html` in a browser for a static view.
