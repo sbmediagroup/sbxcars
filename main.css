@@ -126,7 +126,7 @@ p,button,input,select{font-family:var(--font-sans);font-weight:400}
 .page-intro .intro-left{grid-column:1/-1;text-align:center}
 .page-intro .intro-body{grid-column:1/-1;margin-top:18px}
 .page-intro h1{font-family:var(--font-sans);font-weight:400;font-size:clamp(28px,3.2vw,44px);line-height:1.08;margin:0 0 10px;text-transform:none;letter-spacing:0;color:var(--sg-black)}
-.page-intro h1::after{content:"";display:block;width:48px;height:3px;background:var(--brand-gold);margin-top:12px;border-radius:2px}
+.page-intro h1::after{content:"";display:block;width:48px;height:3px;background:var(--brand-gold);margin-top:12px;border-radius:2px;margin-left:auto;margin-right:auto}
 .page-intro .intro-left,
 .page-intro .intro-body { text-align: center; }
 .page-intro .intro-body p { margin-left: 0; margin-right: 0; }
