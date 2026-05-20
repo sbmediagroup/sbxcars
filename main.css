@@ -1083,6 +1083,14 @@ main{flex:1}
 .price{color:var(--near-black)}
 .time{color:var(--muted-3);font-weight:400}
 
+/* Hotfix (visual test): force hero headings to use Proxima Nova 700 */
+.hero-caption h1,
+.sell-hero-banner .hero-caption h1,
+.sell-cta .hero-caption h1{
+   font-family:var(--font-ui) !important;
+   font-weight:var(--fw-bold) !important;
+}
+
 /* Footer (restored dark site footer to match staging) */
 .site-footer{background:#0b0b0b;padding:28px 0 12px;color:rgba(255,255,255,0.95);width:100%;box-sizing:border-box}
 .footer-banner{padding:12px 12px}
