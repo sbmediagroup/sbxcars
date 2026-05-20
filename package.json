@@ -9,6 +9,7 @@
     "sharp": "^0.32.0"
   },
   "dependencies": {
+    "fontkit": "^2.0.4",
     "pdf-parse": "^2.4.5",
     "puppeteer": "^25.0.4"
   }
