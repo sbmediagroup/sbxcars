@@ -1003,8 +1003,8 @@ html, body{overflow-x:hidden}
 
 /* Final centering override: ensure hero caption is centered in the hero viewport on small screens */
 @media (max-width:900px){
-   .sell-hero-banner .hero-caption,
-   .sell-hero-banner .hero-caption.bottom-left{
+   /* Center non-bottom-left captions */
+   .sell-hero-banner .hero-caption:not(.bottom-left){
       position: absolute !important;
       left: 50% !important;
       top: 50% !important;
@@ -1016,11 +1016,24 @@ html, body{overflow-x:hidden}
       z-index: 9999 !important;
       display: block !important;
    }
+
+   /* Mobile bottom-left placement: align to left gutter and sit above bottom */
+   .sell-hero-banner .hero-caption.bottom-left{
+         position: absolute !important;
+         left: 20px !important;
+         right: auto !important;
+         bottom: 10vh !important;
+         top: auto !important;
+         transform: none !important;
+         margin: 0 !important;
+         text-align: left !important;
+         z-index: 9999 !important;
+         display: block !important;
+   }
 }
 
-/* Mobile: prevent caption text from wrapping so heading and subheading remain one line each */
+/* Mobile: prevent caption subheading from wrapping so it stays tidy; allow h1 to wrap */
 @media (max-width:900px){
-   .sell-hero-banner .hero-caption h1,
    .sell-hero-banner .hero-caption .muted {
       white-space: nowrap !important;
       overflow: hidden !important;
@@ -1051,19 +1064,8 @@ html, body{overflow-x:hidden}
      text-align:center;
      padding:0 12px;
    }
-   /* specifically override the more specific bottom-left rule from desktop
-      — keep this block focused on positioning only so it doesn't fight the
-      final centering override elsewhere in the file */
-   .sell-hero-banner .hero-caption.bottom-left{
-      position: absolute !important;
-      left: 50% !important;
-      top: 50% !important;
-      bottom: auto !important;
-      transform: translate(-50%, -50%) !important;
-      margin: 0 !important;
-      z-index: 70 !important;
-      display: block !important;
-   }
+   /* Removed conflicting bottom-left centering here so mobile placement
+      is controlled by the dedicated mobile block earlier in the file. */
    .hero-caption h1{font-size:clamp(22px,6vw,36px)}
    .hero-caption p{font-size:14px}
 }
@@ -1085,6 +1087,39 @@ html, body{overflow-x:hidden}
 @media (max-width:900px){
    .hero-slider .slides{height:320px}
    .hero-slider .slide img{height:320px}
+}
+
+/* Final mobile pin: force bottom-left corner placement for `.hero-caption.bottom-left` */
+@media (max-width:900px){
+   .sell-hero-banner .hero-caption.bottom-left{
+      left: 7px !important;
+      bottom: 15px !important;
+      top: auto !important;
+      transform: none !important;
+      text-align: left !important;
+      display: block !important;
+      z-index: 9999 !important;
+   }
+}
+/* Mobile-specific visual tuning to avoid covering cars */
+@media (max-width:699px){
+   .sell-hero-banner .hero-caption.bottom-left{
+      padding:5px 8px !important;
+      max-width:56% !important;
+      background: rgba(0,0,0,0.42) !important;
+      border-radius:8px !important;
+    }
+   .sell-hero-banner .hero-caption.bottom-left h1{
+      font-size:15px !important;
+      line-height:1.1 !important;
+      margin-bottom:6px !important;
+      white-space: normal !important;
+    }
+   .sell-hero-banner .hero-caption.bottom-left .muted{
+      font-size:10px !important;
+      font-weight:400 !important;
+      margin:0 !important;
+   }
 }
 @media (max-width:520px){
    .slider-control{width:36px;height:36px;border-radius:18px}
