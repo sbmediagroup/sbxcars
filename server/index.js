@@ -9,12 +9,84 @@ const path = require('path');
 const app = express();
 app.use(cors());
 app.use(express.json());
+// Basic rate limiter for form endpoints
+const rateLimit = require('express-rate-limit');
+const sellLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: Number(process.env.SELL_RATE_LIMIT || 10), // limit each IP
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Too many requests from this IP, please try again later.'
+});
 
 const PORT = process.env.PORT || 3001;
 const TO_EMAIL = process.env.TO_EMAIL || 'chido.ukaigwe@sbmediagroup.com';
 
 // Serve static site from project root (one level up)
 const staticDir = path.join(__dirname, '..');
+
+// In-memory recent reCAPTCHA verification log (dev/debug only). Keeps small bounded list.
+const recaptchaLog = [];
+function recordRecaptcha(verifResponse, ip, type, reason){
+  try{
+    const entry = {
+      ts: new Date().toISOString(),
+      ip: ip || null,
+      type: type || null, // 'v3' or 'v2'
+      reason: reason || null,
+      response: verifResponse || null
+    };
+    recaptchaLog.push(entry);
+    // keep last 200 entries
+    if(recaptchaLog.length > 200) recaptchaLog.shift();
+    // prune entries older than 24h occasionally
+    if(recaptchaLog.length > 0 && recaptchaLog.length % 50 === 0){
+      const cutoff = Date.now() - (24*60*60*1000);
+      while(recaptchaLog.length && new Date(recaptchaLog[0].ts).getTime() < cutoff) recaptchaLog.shift();
+    }
+  }catch(e){ /* ignore logging errors */ }
+}
+
+// In-memory failure tracking and blocking per IP
+const failMap = new Map();
+const BLOCK_THRESHOLD = Number(process.env.SELL_BLOCK_THRESHOLD || 6); // failures before block
+const BLOCK_WINDOW_MS = Number(process.env.SELL_BLOCK_WINDOW_MINUTES || 60) * 60 * 1000; // window to count failures
+const BLOCK_DURATION_MS = Number(process.env.SELL_BLOCK_DURATION_MINUTES || 60) * 60 * 1000; // block time
+
+function recordFailure(ip, info){
+  try{
+    const now = Date.now();
+    const entry = failMap.get(ip) || {count:0, firstTs: now, blockedUntil: 0};
+    // if window expired, reset
+    if(now - entry.firstTs > BLOCK_WINDOW_MS){
+      entry.count = 0;
+      entry.firstTs = now;
+    }
+    entry.count += 1;
+    // block if threshold exceeded
+    if(entry.count >= BLOCK_THRESHOLD){
+      entry.blockedUntil = now + BLOCK_DURATION_MS;
+      console.warn('Blocking IP for recaptcha failures', ip, 'until', new Date(entry.blockedUntil).toISOString());
+      // also record a recaptcha log entry for the block event
+      recordRecaptcha({blockedUntil: entry.blockedUntil, count: entry.count}, ip, 'block', info || 'threshold');
+    }
+    failMap.set(ip, entry);
+    return entry;
+  }catch(e){ return null; }
+}
+
+function clearFailures(ip){
+  try{ failMap.delete(ip); }catch(e){}
+}
+
+function isBlocked(ip){
+  try{
+    const entry = failMap.get(ip);
+    if(!entry) return false;
+    if(entry.blockedUntil && Date.now() < entry.blockedUntil) return true;
+    return false;
+  }catch(e){ return false; }
+}
 
 
 // Simple HTML escaper to prevent injection in email bodies
@@ -107,6 +179,17 @@ if(useAwsSdk){
 }
 
 app.post('/api/sell', async (req, res) => {
+  // apply rate limiter
+  await new Promise((resolve, reject)=> sellLimiter(req, res, (err)=> err ? reject(err) : resolve()));
+
+  // Check IP blocking for repeated failed recaptcha tokens
+  const clientIp = req.ip || req.connection && req.connection.remoteAddress || 'unknown';
+  if(isBlocked(clientIp)){
+    const entry = failMap.get(clientIp) || {};
+    const retryAfter = entry.blockedUntil ? Math.ceil((entry.blockedUntil - Date.now())/1000) : 60;
+    res.setHeader('Retry-After', String(retryAfter));
+    return res.status(429).json({error:'blocked', retryAfter});
+  }
   const body = req.body || {};
   const fields = {
     transactionType: body.transactionType || '',
@@ -115,34 +198,87 @@ app.post('/api/sell', async (req, res) => {
     vin: body.vin || '', currency: body.currency || '$', expectedPrice: body.expectedPrice || '',
     fullName: body.fullName || '', email: body.email || ''
   };
-
   // Honeypot anti-spam: hidden field `hp_name` should be empty
   if((body.hp_name || '').trim() !== ''){
+    console.warn('Honeypot triggered from', req.ip);
     return res.status(400).send('Spam detected');
   }
   // Basic validation
   // Require the newly-added fields as well: transactionType and location
-  if(!fields.transactionType || !fields.year || !fields.make || !fields.model || !fields.location || !fields.fullName || !fields.email){
-    return res.status(400).send('Missing required fields');
-  }
+  // Simple server-side sanitization/validation
+  const errs = [];
+  if(!fields.transactionType || !/^(buy|sell)$/i.test(fields.transactionType)) errs.push('transactionType');
+  if(!fields.year || !/^[0-9]{2,4}$/.test(fields.year)) errs.push('year');
+  if(!fields.make) errs.push('make');
+  if(!fields.model) errs.push('model');
+  if(!fields.location) errs.push('location');
+  if(!fields.fullName) errs.push('fullName');
+  if(!fields.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fields.email)) errs.push('email');
+  if(errs.length) return res.status(400).send('Missing or invalid fields: '+errs.join(', '));
 
-  // Optional reCAPTCHA verification
-  if(body.recaptchaToken && process.env.RECAPTCHA_SECRET){
-    try{
-      const verifyRes = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-        method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'},
-        body: `secret=${encodeURIComponent(process.env.RECAPTCHA_SECRET)}&response=${encodeURIComponent(body.recaptchaToken)}`
-      });
-      const j = await verifyRes.json();
-      if(!j.success){
-        return res.status(400).send('reCAPTCHA verification failed');
+  // Optional reCAPTCHA verification: support v3 (score) and v2 (challenge) with v3-first + v2-fallback
+  // Accept either RECAPTCHA_SECRET or RECAPTCHA_SECRET_KEY from env
+  const recaptchaSecretEnv = process.env.RECAPTCHA_SECRET || process.env.RECAPTCHA_SECRET_KEY || '';
+  if(recaptchaSecretEnv){
+    const recaptchaSecret = recaptchaSecretEnv;
+    // If v3 token provided, verify it first
+    if(body.recaptchaToken){
+      try{
+        const verifyRes = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+          method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'},
+          body: `secret=${encodeURIComponent(recaptchaSecret)}&response=${encodeURIComponent(body.recaptchaToken)}`
+        });
+        const j = await verifyRes.json();
+        // record full verification response for debugging
+        recordRecaptcha(j, req.ip, 'v3', j && j.success ? 'success' : 'v3-failed-or-low-score');
+        if(!j.success){
+          console.warn('reCAPTCHA v3 failed', req.ip, j);
+          // record failure and potentially block
+          recordFailure(req.ip, 'v3-failed');
+          return res.status(428).json({error:'require-v2', reason:'v3-failed'});
+        }
+        if(typeof j.score === 'number' && Number(process.env.RECAPTCHA_SCORE_THRESHOLD || 0.5) > j.score){
+          console.warn('reCAPTCHA v3 low score', j.score, 'from', req.ip, j);
+          // record low score reason and increment failure counter
+          recordRecaptcha(j, req.ip, 'v3', 'low-score');
+          recordFailure(req.ip, 'v3-low-score');
+          return res.status(428).json({error:'require-v2', reason:'low-score', score: j.score});
+        }
+        // v3 success & acceptable score -> continue
+      }catch(err){
+        console.warn('reCAPTCHA v3 verify error',err && err.message ? err.message : err);
+        return res.status(428).json({error:'require-v2', reason:'verify-error'});
       }
-    }catch(err){
-      console.warn('reCAPTCHA verify error',err.message);
+    } else if(body.recaptchaV2Token){
+      // verify v2 token (user completed challenge)
+      try{
+        const verifyRes = await fetch('https://www.google.com/recaptcha/api/siteverify', {
+          method: 'POST', headers: {'Content-Type':'application/x-www-form-urlencoded'},
+          body: `secret=${encodeURIComponent(recaptchaSecret)}&response=${encodeURIComponent(body.recaptchaV2Token)}`
+        });
+        const j = await verifyRes.json();
+        // record v2 verification response
+        recordRecaptcha(j, req.ip, 'v2', j && j.success ? 'success' : 'v2-failed');
+        if(!j.success){
+          console.warn('reCAPTCHA v2 failed', req.ip, j);
+          return res.status(400).send('reCAPTCHA verification failed');
+        }
+        // v2 success -> continue
+      }catch(err){
+        console.warn('reCAPTCHA v2 verify error', err && err.message ? err.message : err);
+        return res.status(500).send('reCAPTCHA verification error');
+      }
+    } else {
+      // No token provided
+      return res.status(400).send('reCAPTCHA token required');
     }
   }
 
-  const subject = `${fields.transactionType ? fields.transactionType.toUpperCase() + ' - ' : ''}New Submission — ${fields.make} ${fields.model} (${fields.year})`;
+  // Escape fields when constructing subject/body
+  const safeMake = escapeHtml(fields.make);
+  const safeModel = escapeHtml(fields.model);
+  const safeYear = escapeHtml(fields.year);
+  const subject = `${fields.transactionType ? fields.transactionType.toUpperCase() + ' - ' : ''}New Submission — ${safeMake} ${safeModel} (${safeYear})`;
   const text = Object.keys(fields).map(k=>`${k}: ${fields[k]}`).join('\n');
   const html = `<h2>New Submission</h2><p><strong>Details</strong></p><ul>${Object.keys(fields).map(k=>`<li><strong>${escapeHtml(k)}:</strong> ${escapeHtml(fields[k])}</li>`).join('')}</ul>`;
 
@@ -211,6 +347,25 @@ app.get('/server/ready', (req, res) => {
 
 // Backwards-compatibility: keep /server/health as an alias to /server/ready
 app.get('/server/health', (req, res) => res.redirect(307, '/server/ready'));
+
+// Fallback to index.html so single-page navigation still works
+// Expose a small client config script so the static page can read site key from env
+app.get('/config.js', (req, res) => {
+  res.setHeader('Content-Type','application/javascript');
+  const siteKey = process.env.RECAPTCHA_SITE_KEY || '';
+  res.send(`window.RECAPTCHA_SITE_KEY = ${JSON.stringify(siteKey)};`);
+});
+
+// Dev-only: return whether server has secret and recent recaptcha log (safe only on localhost)
+app.get('/debug-recaptcha', (req, res) => {
+  const allowedHost = req.hostname === 'localhost' || req.hostname === '127.0.0.1' || req.ip === '::1' || req.ip === '127.0.0.1';
+  if(!allowedHost){
+    return res.status(404).send('Not found');
+  }
+  const secretPresent = !!(process.env.RECAPTCHA_SECRET || process.env.RECAPTCHA_SECRET_KEY);
+  const threshold = Number(process.env.RECAPTCHA_SCORE_THRESHOLD || 0.5);
+  return res.json({ secretPresent, threshold, recent: recaptchaLog.slice(-50) });
+});
 
 // Fallback to index.html so single-page navigation still works
 app.get('*', (req, res) => {

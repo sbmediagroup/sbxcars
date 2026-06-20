@@ -17,6 +17,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,800;1,400&family=DM+Serif+Display&family=Oswald:wght@300;400;600&display=swap" rel="stylesheet">
     
+    <script src="/config.js"></script>
   </head>
   <body>
 
@@ -187,32 +188,141 @@
         const form = document.getElementById('sellForm');
         const msg = document.getElementById('sellFormMessage');
         if(!form) return;
+
+        // Helper to dynamically load external scripts
+        function loadScript(src, opts = {}){
+          return new Promise((resolve, reject)=>{
+            if(document.querySelector('script[src="'+src+'"]')) return resolve();
+            const s = document.createElement('script');
+            s.src = src;
+            if(opts.async) s.async = true;
+            if(opts.defer) s.defer = true;
+            s.onload = () => resolve();
+            s.onerror = (e) => reject(new Error('Failed to load '+src));
+            document.head.appendChild(s);
+          });
+        }
+
+        // read site key at runtime from window.RECAPTCHA_SITE_KEY
+
+        async function getV3Token(){
+          const siteKey = window.RECAPTCHA_SITE_KEY || null;
+          if(!siteKey){
+            console.warn('reCAPTCHA site key missing (window.RECAPTCHA_SITE_KEY)');
+            return null;
+          }
+          // load v3 API which exposes grecaptcha
+          await loadScript('https://www.google.com/recaptcha/api.js?render='+encodeURIComponent(siteKey));
+          if(!window.grecaptcha) {
+            console.warn('grecaptcha script loaded but grecaptcha is not available');
+            return null;
+          }
+          // Wait for grecaptcha.ready and then execute. Timeout after 3s.
+          try{
+            return await new Promise((resolve)=>{
+              let done = false;
+              const finish = (val)=>{ if(done) return; done = true; resolve(val); };
+              try{
+                window.grecaptcha.ready(()=>{
+                  try{
+                      window.grecaptcha.execute(siteKey, {action: 'sell_form'}).then(token=> finish(token)).catch(()=> finish(null));
+                  }catch(e){ finish(null); }
+                });
+              }catch(e){ finish(null); }
+              setTimeout(()=> finish(null), 3000);
+            });
+          }catch(err){
+            console.warn('getV3Token error', err && err.message ? err.message : err);
+            return null;
+          }
+        }
+
+        function showServerError(text){
+          msg.style.color = 'crimson';
+          msg.textContent = text;
+        }
+
+        async function runV2ChallengeAndSubmit(data){
+          // load v2 API (will expose grecaptcha.render)
+          await loadScript('https://www.google.com/recaptcha/api.js');
+          // ensure container — visible and centered under the form so users can complete the challenge
+          let container = document.getElementById('recaptcha-v2-container');
+          if(!container){
+            container = document.createElement('div');
+            container.id = 'recaptcha-v2-container';
+            container.style.display = 'flex';
+            container.style.justifyContent = 'center';
+            container.style.marginTop = '12px';
+            // place after the form so it's visually below
+            form.parentNode.insertBefore(container, form.nextSibling);
+          } else {
+            container.innerHTML = '';
+            container.style.display = 'flex';
+          }
+
+          return new Promise((resolve, reject)=>{
+            try{
+              const siteKey = window.RECAPTCHA_SITE_KEY || null;
+              // Render a visible checkbox widget so it's clear to users where to interact.
+              const widgetId = window.grecaptcha.render(container, {
+                sitekey: siteKey,
+                size: 'normal',
+                callback: async function(token){
+                  try{
+                    data.recaptchaV2Token = token;
+                    const r = await fetch('/api/sell', {method:'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)});
+                    resolve(r);
+                  }catch(err){ reject(err); }
+                }
+              });
+              // scroll into view so user sees the widget
+              container.scrollIntoView({behavior:'smooth', block:'center'});
+            }catch(err){ reject(err); }
+          });
+        }
+
         form.addEventListener('submit', async function(e){
           e.preventDefault();
           msg.textContent = '';
           const data = {};
           new FormData(form).forEach((v,k)=>data[k]=v);
-          // UI: hide any previous error
           const errorBox = document.getElementById('sellError');
           if(errorBox) errorBox.remove();
+
           try{
-            const res = await fetch('/api/sell', {
-              method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)
-            });
-            if(res.ok){
-              // hide intro paragraph and form, show confirmation
+            // If site key provided, attempt v3 first
+            if(window.RECAPTCHA_SITE_KEY){
+              const v3 = await getV3Token();
+              if(v3) data.recaptchaToken = v3;
+            }
+
+            let res = await fetch('/api/sell', {method:'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data)});
+
+            // Server requests v2 fallback with 428 and {error:'require-v2'}
+            if(res.status === 428){
+              let j = null;
+              try{ j = await res.json(); }catch(e){}
+              if(j && j.error === 'require-v2'){
+                if(!window.RECAPTCHA_SITE_KEY){
+                  showServerError('Submission blocked: additional verification required.');
+                  return;
+                }
+                // run v2 challenge and resubmit
+                res = await runV2ChallengeAndSubmit(data);
+              }
+            }
+
+            if(res && res.ok){
               const intro = form.closest('.sell-card') && form.closest('.sell-card').querySelector('.muted');
               if(intro) intro.style.display = 'none';
               form.style.display = 'none';
               const confirm = document.getElementById('sellConfirm');
               if(confirm){
-                // inject a reset link/button into confirmation
                 confirm.innerHTML = '<h3>Thanks — your vehicle has been submitted</h3><p>We will contact you shortly.</p><p><a href="#" id="sellAgain" class="btn-outline-gold">Submit another vehicle</a></p>';
                 confirm.style.display = 'block';
                 const again = document.getElementById('sellAgain');
                 if(again){
                   again.addEventListener('click', function(ev){ ev.preventDefault();
-                    // restore form
                     confirm.style.display = 'none';
                     if(intro) intro.style.display = '';
                     form.style.display = '';
@@ -222,8 +332,10 @@
                   });
                 }
               }
-            } else if(res.status >= 500){
-              // Server error — show a prominent error panel with retry
+              return;
+            }
+
+            if(res && res.status >= 500){
               const body = await res.text();
               const panel = document.createElement('div');
               panel.id = 'sellError';
@@ -235,13 +347,13 @@
               panel.style.color = 'crimson';
               panel.innerHTML = '<strong>Submission failed — server error</strong><p>Please try again later or contact us at '+(window.location.hostname ? 'support@'+window.location.hostname : '')+'</p>';
               form.parentNode.insertBefore(panel, form.nextSibling);
-            } else {
-              const body = await res.text();
-              msg.style.color = 'crimson';
-              msg.textContent = 'Submission failed: '+(body||res.statusText);
+              return;
             }
+
+            const bodyText = await (res ? res.text() : Promise.resolve('No response'));
+            showServerError('Submission failed: '+(bodyText||res.statusText));
+
           }catch(err){
-            // Network or unexpected error
             const panel = document.createElement('div');
             panel.id = 'sellError';
             panel.setAttribute('role','alert');
