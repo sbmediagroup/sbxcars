@@ -212,6 +212,7 @@ app.post('/api/sell', async (req, res) => {
   if(!fields.make) errs.push('make');
   if(!fields.model) errs.push('model');
   if(!fields.location) errs.push('location');
+  if(!fields.expectedPrice || String(fields.expectedPrice).trim() === '') errs.push('expectedPrice');
   if(!fields.fullName) errs.push('fullName');
   if(!fields.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fields.email)) errs.push('email');
   if(errs.length) return res.status(400).send('Missing or invalid fields: '+errs.join(', '));
