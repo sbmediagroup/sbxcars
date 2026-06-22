@@ -368,6 +368,71 @@ app.get('/debug-recaptcha', (req, res) => {
   return res.json({ secretPresent, threshold, recent: recaptchaLog.slice(-50) });
 });
 
+// Admin helpers: allow only localhost or token-authenticated requests
+function isAdminRequest(req){
+  const token = (req.headers['x-admin-token'] || '').toString();
+  if(process.env.ADMIN_TOKEN && token && token === process.env.ADMIN_TOKEN) return true;
+  const allowedHost = req.hostname === 'localhost' || req.hostname === '127.0.0.1' || req.ip === '::1' || req.ip === '127.0.0.1';
+  return allowedHost;
+}
+
+// Admin: list blocked IPs and their state
+app.get('/admin/blocked', (req, res) => {
+  if(!isAdminRequest(req)) return res.status(404).send('Not found');
+  const entries = [];
+  failMap.forEach((v, k) => {
+    entries.push({ ip: k, count: v.count || 0, firstTs: new Date(v.firstTs).toISOString(), blockedUntil: v.blockedUntil ? new Date(v.blockedUntil).toISOString() : null });
+  });
+  return res.json({ count: entries.length, entries });
+});
+
+// Admin: clear a single IP or all entries
+app.post('/admin/blocked/clear', (req, res) => {
+  if(!isAdminRequest(req)) return res.status(404).send('Not found');
+  const body = req.body || {};
+  if(body.all){
+    failMap.clear();
+    return res.json({ ok: true, cleared: 'all' });
+  }
+  if(body.ip){
+    clearFailures(body.ip);
+    return res.json({ ok: true, cleared: body.ip });
+  }
+  return res.status(400).json({ error: 'ip or all required' });
+});
+
+// Admin-only: test submit endpoint to exercise validation and email rendering without sending email or requiring reCAPTCHA.
+app.post('/admin/test-submit', (req, res) => {
+  if(!isAdminRequest(req)) return res.status(404).send('Not found');
+  const body = req.body || {};
+  const fields = {
+    transactionType: body.transactionType || '',
+    year: body.year || '', make: body.make || '', model: body.model || '', mileage: body.mileage || '',
+    location: body.location || '',
+    vin: body.vin || '', currency: body.currency || '$', expectedPrice: body.expectedPrice || '',
+    fullName: body.fullName || '', email: body.email || ''
+  };
+  const errs = [];
+  if(!fields.transactionType || !/^(buy|sell)$/i.test(fields.transactionType)) errs.push('transactionType');
+  if(!fields.year || !/^[0-9]{2,4}$/.test(fields.year)) errs.push('year');
+  if(!fields.make) errs.push('make');
+  if(!fields.model) errs.push('model');
+  if(!fields.location) errs.push('location');
+  if(!fields.expectedPrice || String(fields.expectedPrice).trim() === '') errs.push('expectedPrice');
+  if(!fields.fullName) errs.push('fullName');
+  if(!fields.email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(fields.email)) errs.push('email');
+  if(errs.length) return res.status(400).json({ error: 'Missing or invalid fields', fields: errs });
+
+  const safeMake = escapeHtml(fields.make);
+  const safeModel = escapeHtml(fields.model);
+  const safeYear = escapeHtml(fields.year);
+  const subject = `${fields.transactionType ? fields.transactionType.toUpperCase() + ' - ' : ''}New Submission — ${safeMake} ${safeModel} (${safeYear})`;
+  const text = Object.keys(fields).map(k=>`${k}: ${fields[k]}`).join('\n');
+  const html = `<h2>New Submission</h2><p><strong>Details</strong></p><ul>${Object.keys(fields).map(k=>`<li><strong>${escapeHtml(k)}:</strong> ${escapeHtml(fields[k])}</li>`).join('')}</ul>`;
+  // Return rendered content but do not send any external email — admin-only preview
+  return res.json({ ok: true, preview: { subject, text, html } });
+});
+
 // Fallback to index.html so single-page navigation still works
 app.get('*', (req, res) => {
   res.sendFile(path.join(staticDir, 'index.html'));
